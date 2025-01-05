@@ -163,4 +163,99 @@ JOIN Orders_staging o ON od.OrderID = o.OrderID
 JOIN Products_staging p ON od.ProductID = p.ProductID;
 ```
 
-### 5. WIP
+## 4. Vizualizácia dát
+
+Vytvorený bol interaktívny dashboard obsahujúci vizualizácie všetkých kľúčových metrík analyzovaných v predchádzajúcej kapitole:
+
+![Dashboard ukážka](dashboard.png)
+*Obrázok 3: Dashboard Northwind dátovej analýzy*
+
+Dashboard zobrazuje:
+- Predaj podľa kategórií
+- Mesačné tržby
+- Výkon zamestnancov
+- Top zákazníkov podľa objednávok
+- Sezónnu analýzu predaja
+
+
+
+### 4.1 Predaj podľa kategórií
+```sql
+SELECT 
+    d.Category,
+    SUM(f.OverallPrice) as sales
+FROM facts_orderdetails f
+JOIN dim_products d ON f.dim_products_ProductID = d.ProductID
+GROUP BY d.Category
+ORDER BY sales DESC;
+```
+
+### 4.2 Mesačné tržby
+```sql
+SELECT 
+    d.monthString as month,
+    SUM(f.OverallPrice) as revenue
+FROM facts_orderdetails f
+JOIN dim_order_date d ON f.dim_order_date_iddim_order_date = d.iddim_order_date
+GROUP BY d.monthString, d.month
+ORDER BY d.month;
+```
+
+### 4.3 Výkon zamestnancov
+```sql
+SELECT 
+    e.LastName as name,
+    SUM(f.OverallPrice) as sales
+FROM facts_orderdetails f
+JOIN dim_employees e ON f.dim_employees_EmployeeID = e.EmployeeID
+GROUP BY e.LastName
+ORDER BY sales DESC;
+```
+
+### 4.4 Top zákazníci podľa objednávok
+```sql
+SELECT 
+    c.Country,
+    COUNT(DISTINCT f.OrderID) as orders,
+    SUM(f.OverallPrice) as revenue
+FROM facts_orderdetails f
+JOIN dim_customers c ON f.dim_customers_CustomerID = c.CustomerID
+GROUP BY c.Country
+ORDER BY orders DESC
+LIMIT 10;
+```
+
+### 4.5 Sezónna analýza predaja
+```sql
+WITH seasonal_data AS (
+    SELECT 
+        CASE 
+            WHEN d.month IN (3,4,5) THEN 'Spring'
+            WHEN d.month IN (6,7,8) THEN 'Summer'
+            WHEN d.month IN (9,10,11) THEN 'Fall'
+            ELSE 'Winter'
+        END as season,
+        SUM(f.OverallPrice) as sales,
+        COUNT(DISTINCT f.OrderID) as orders
+    FROM facts_orderdetails f
+    JOIN dim_order_date d ON f.dim_order_date_iddim_order_date = d.iddim_order_date
+    GROUP BY 
+        CASE 
+            WHEN d.month IN (3,4,5) THEN 'Spring'
+            WHEN d.month IN (6,7,8) THEN 'Summer'
+            WHEN d.month IN (9,10,11) THEN 'Fall'
+            ELSE 'Winter'
+        END
+)
+SELECT *
+FROM seasonal_data
+ORDER BY 
+    CASE season
+        WHEN 'Spring' THEN 1
+        WHEN 'Summer' THEN 2
+        WHEN 'Fall' THEN 3
+        WHEN 'Winter' THEN 4
+    END;
+```
+
+Autor: Andrej Šima
