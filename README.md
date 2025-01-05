@@ -180,6 +180,7 @@ Dashboard zobrazuje:
 
 
 ### 4.1 Predaj podľa kategórií
+Tento graf zobrazuje celkový predaj rozdelený podľa produktových kategórií. SQL dopyt spája tabuľku faktov (facts_orderdetails) s dimenziou produktov (dim_products) a agreguje celkovú cenu (OverallPrice) pre každú kategóriu. Výsledky sú zoradené zostupne podľa predaja, takže môžeme jednoducho vidieť, ktoré kategórie produktov generujú najvyššie tržby.
 ```sql
 SELECT 
     d.Category,
@@ -191,6 +192,7 @@ ORDER BY sales DESC;
 ```
 
 ### 4.2 Mesačné tržby
+Tento graf sleduje vývoj tržieb v čase po mesiacoch. SQL dopyt využíva spojenie s dimenziou dátumu (dim_order_date) a agreguje tržby pre každý mesiac. Používa sa monthString pre čitateľné názvy mesiacov a zoraďuje sa podľa číselnej hodnoty mesiaca (d.month), čo zabezpečuje chronologické zobrazenie. Tento graf je užitočný pre sledovanie sezónnych trendov a celkového vývoja tržieb.
 ```sql
 SELECT 
     d.monthString as month,
@@ -202,6 +204,7 @@ ORDER BY d.month;
 ```
 
 ### 4.3 Výkon zamestnancov
+Graf výkonu zamestnancov ukazuje celkové predaje generované jednotlivými zamestnancami. SQL dopyt spája fakty s dimenziou zamestnancov (dim_employees) a agreguje predaje podľa priezviska zamestnanca. Zoradenie zostupne podľa predajov umožňuje rýchlo identifikovať najvýkonnejších predajcov.
 ```sql
 SELECT 
     e.LastName as name,
@@ -213,6 +216,7 @@ ORDER BY sales DESC;
 ```
 
 ### 4.4 Top zákazníci podľa objednávok
+Tento graf analyzuje zákazníkov z dvoch pohľadov - počet objednávok a celkové tržby, rozdelené podľa krajín. SQL dopyt používa COUNT(DISTINCT) pre počítanie unikátnych objednávok a SUM pre celkové tržby. Limitovanie na TOP 10 pomocou LIMIT 10 zabezpečuje, že sa zobrazujú len najvýznamnejší zákazníci.
 ```sql
 SELECT 
     c.Country,
@@ -226,6 +230,14 @@ LIMIT 10;
 ```
 
 ### 4.5 Sezónna analýza predaja
+Tento sofistikovanejší graf využíva Common Table Expression (CTE) pre analýzu sezónnych trendov. SQL kód najprv kategorizuje mesiace do ročných období pomocou CASE statement:
+
+- Jar: marec, apríl, máj
+- Leto: jún, júl, august
+- Jeseň: september, október, november
+- Zima: december, január, február
+
+Pre každé obdobie sa počíta celkový predaj a počet objednávok. Výsledky sú zoradené v prirodzenom poradí ročných období (jar -> leto -> jeseň -> zima) pomocou druhého CASE statement-u v ORDER BY klauzule.
 ```sql
 WITH seasonal_data AS (
     SELECT 
