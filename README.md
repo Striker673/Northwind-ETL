@@ -69,7 +69,14 @@ Hlavné metriky:
 
 ### 3.1 Extract (Extrahovanie dát)
 
-Vytvorenie databázy a staging schémy:
+Táto časť sa zameriava na prípravu prostredia a počiatočné načítanie dát:
+
+Prvý SQL blok vytvára základnú infraštruktúru:
+
+- Vytvára novú databázu BLUEJAY_NORTHWIND
+- V rámci nej vytvára staging schému
+- Prepína kontext na používanie tejto schémy
+
 
 ```sql
 CREATE DATABASE BLUEJAY_NORTHWIND;
@@ -77,7 +84,12 @@ CREATE SCHEMA BLUEJAY_NORTHWIND.staging;
 USE SCHEMA BLUEJAY_NORTHWIND.staging;
 ```
 
-Vytvorenie staging tabuliek:
+Druhý SQL blok definuje staging tabuľky:
+
+
+- Categories_staging: ukladá kategórie produktov s ID, názvom a popisom
+- Customers_staging: obsahuje informácie o zákazníkoch vrátane kontaktných údajov a adresy
+- Tieto tabuľky slúžia ako dočasné úložisko pre surové dáta pred ich transformáciou.
 
 ```sql
 CREATE OR REPLACE TABLE Categories_staging (
@@ -97,7 +109,13 @@ CREATE OR REPLACE TABLE Customers_staging (
 );
 ```
 
-Nahranie dát do staging tabuliek:
+Tretí SQL blok sa zaoberá samotným nahrávaním dát:
+
+
+- Vytvára stage priestor (my_stage) pre nahrávanie súborov
+- Používa COPY INTO príkaz pre nahratie CSV súboru
+- Definuje formát súboru (CSV s voliteľnými úvodzovkami)
+- Obsahuje error handling (ON_ERROR = 'CONTINUE')
 
 ```sql
 CREATE OR REPLACE STAGE my_stage;
@@ -110,7 +128,13 @@ ON_ERROR = 'CONTINUE';
 
 ### 3.2 Transform (Transformácia dát)
 
-Vytvorenie časovej dimenzie:
+V tejto fáze sa surové dáta transformujú do dimenzionálneho modelu:
+
+- Časová dimenzia (dim_order_date):
+- Vytvára komplexnú časovú dimenziu z dátumov objednávok
+- Extrahuje rôzne časové komponenty: deň, deň v týždni, mesiac, štvrťrok, rok
+- Používa GROUP BY pre odstránenie duplicít
+- Vytvára unikátny kľúč vo formáte YYYYMMDD
 
 ```sql
 CREATE OR REPLACE TABLE dim_order_date AS
@@ -126,7 +150,10 @@ FROM Orders_staging
 GROUP BY OrderDate;
 ```
 
-Vytvorenie produktovej dimenzie:
+- Produktová dimenzia (dim_products):
+- Spája produkty s ich kategóriami pomocou JOIN
+- Obsahuje základné informácie o produktoch: názov, jednotku, cenu
+- Denormalizuje kategóriu produktu pre lepší výkon dotazov
 
 ```sql
 CREATE OR REPLACE TABLE dim_products AS
@@ -142,7 +169,14 @@ JOIN Categories_staging c ON p.CategoryID = c.CategoryID;
 
 ### 3.3 Load (Načítanie dát)
 
-Vytvorenie faktovej tabuľky:
+Posledná fáza vytvára centrálnu faktovú tabuľku:
+
+- Spája dáta z viacerých staging tabuliek (OrderDetails, Orders, Products)
+- Počíta odvodené metriky (OverallPrice ako Quantity * Price)
+- Vytvára cudzie kľúče pre všetky relevantné dimenzie
+- Zachováva granularitu na úrovni jednotlivých položiek objednávky
+- Obsahuje všetky potrebné väzby na dimenzionálne tabuľky pomocou ID stĺpcov
+
 
 ```sql
 CREATE OR REPLACE TABLE facts_orderdetails AS
@@ -162,6 +196,7 @@ FROM OrderDetails_staging od
 JOIN Orders_staging o ON od.OrderID = o.OrderID
 JOIN Products_staging p ON od.ProductID = p.ProductID;
 ```
+Celý tento ETL proces je navrhnutý tak, aby vytvoril dobre štruktúrovaný dimenzionálny model vhodný pre analytické účely, s jasným oddelením faktov a dimenzií.
 
 ## 4. Vizualizácia dát
 
