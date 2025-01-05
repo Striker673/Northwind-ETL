@@ -17,7 +17,7 @@ Projekt sa zameriava na analýzu obchodných dát z Northwind databázy, ktorá 
 
 ### ERD diagram zdrojových dát:
 
-![ERD diagram zdrojovej databázy](obrazok1.png)
+![ERD diagram zdrojovej databázy](erd_schema.png)
 *Obrázok 1: Entitno-relačná schéma Northwind databázy*
 
 ## 2. Návrh dimenzionálneho modelu
