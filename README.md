@@ -187,6 +187,7 @@ SELECT
     od.Quantity * p.Price as OverallPrice,
     o.OrderDate,
     TO_NUMBER(TO_CHAR(o.OrderDate, 'YYYYMMDD')) as dim_order_date_iddim_order_date,
+    t.iddim_order_time as dim_order_time_iddim_order_time,
     o.EmployeeID as dim_employees_EmployeeID,
     od.ProductID as dim_products_ProductID,
     p.SupplierID as dim_suppliers_SupplierID,
@@ -194,8 +195,32 @@ SELECT
     o.CustomerID as dim_customers_CustomerID
 FROM OrderDetails_staging od
 JOIN Orders_staging o ON od.OrderID = o.OrderID
-JOIN Products_staging p ON od.ProductID = p.ProductID;
+JOIN Products_staging p ON od.ProductID = p.ProductID
+JOIN dim_order_time t ON TO_TIME(o.OrderDate) = t.timestamp;
+
+
 ```
+V poslednej časti SQL kódu po vytvorení faktovej tabuľky nasleduje séria DROP TABLE príkazov, ktoré majú dôležitý účel v ETL procese:
+```sql
+DROP TABLE IF EXISTS Categories_staging;
+DROP TABLE IF EXISTS Customers_staging;
+DROP TABLE IF EXISTS Employees_staging;
+DROP TABLE IF EXISTS Shippers_staging;
+DROP TABLE IF EXISTS Suppliers_staging;
+DROP TABLE IF EXISTS Products_staging;
+DROP TABLE IF EXISTS Orders_staging;
+DROP TABLE IF EXISTS OrderDetails_staging;
+```
+Tieto príkazy:
+
+- Odstraňujú všetky staging tabuľky po úspešnom vytvorení faktovej tabuľky
+- Používajú konštrukciu IF EXISTS na zabezpečenie, že príkaz nespôsobí chybu ak tabuľka neexistuje
+- Pomáhajú udržiavať čistotu a poriadok v databáze odstránením dočasných tabuliek
+- Šetria úložný priestor, keďže dáta už boli transformované a presunuté do dimenzionálneho modelu
+- Predstavujú best practice v ETL procesoch, kde staging tabuľky slúžia len ako dočasné úložisko
+
+Je to dôležitý krok z hľadiska údržby a správy databázy, pretože staging tabuľky už nie sú potrebné po úspešnom dokončení ETL procesu a ich ponechanie by mohlo viesť k zbytočnému zaberaniu priestoru a potenciálnej nejasnosti v štruktúre databázy.
+
 Celý tento ETL proces je navrhnutý tak, aby vytvoril dobre štruktúrovaný dimenzionálny model vhodný pre analytické účely, s jasným oddelením faktov a dimenzií.
 
 ## 4. Vizualizácia dát
