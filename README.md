@@ -23,6 +23,8 @@ Projekt sa zameriava na analýzu obchodných dát z Northwind databázy, ktorá 
 
 ## 2. Návrh dimenzionálneho modelu
 
+Star schéma je fundamentálny prístup k dimenzionálnemu modelovaniu dát, ktorý je implementovaný v Northwind dátovom sklade. Tento model je charakteristický svojou centrálnou faktovou tabuľkou prepojenou s okolitými dimenzionálnymi tabuľkami.
+
 ![Star Schema diagram](star_schema.png)
 
 *Obrázok 2: Hviezdicová schéma Northwind dátového skladu*
@@ -66,6 +68,8 @@ Hlavné metriky:
    - Aktualizuje sa pri zmene zákazníckych údajov
 
 ## 3. ETL proces v nástroji Snowflake
+
+ETL (Extract, Transform, Load) proces v nástroji Snowflake je komplexný proces pozostávajúci z troch hlavných fáz, ktoré slúžia na prípravu dát pre analytické účely. Tento proces využíva vlastnosti a funkcie Snowflake na efektívne spracovanie a transformáciu dát.
 
 ### 3.1 Extract (Extrahovanie dát)
 
