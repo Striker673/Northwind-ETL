@@ -231,7 +231,7 @@ Celý tento ETL proces je navrhnutý tak, aby vytvoril dobre štruktúrovaný di
 
 Vytvorený bol interaktívny dashboard obsahujúci vizualizácie všetkých kľúčových metrík analyzovaných v predchádzajúcej kapitole:
 
-![Dashboard ukážka](dashboard.png)
+![Dashboard ukážka](dashboard2.png)
 *Obrázok 3: Dashboard Northwind dátovej analýzy*
 
 Dashboard zobrazuje:
