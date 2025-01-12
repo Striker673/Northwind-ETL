@@ -1,11 +1,16 @@
 --Predaje podľa kategórií
 SELECT 
-    d.Category,
-    SUM(f.OverallPrice) as sales
+    dp.Category,
+    SUM(f.OverallPrice) as CelkovePredaje,
+    SUM(f.Quantity) as CelkoveMnozstvo,
+    COUNT(DISTINCT f.OrderID) as PocetObjednavok,
+    ROUND(SUM(f.OverallPrice) / COUNT(DISTINCT f.OrderID), 2) as PriemernaSumaObjednavky,
+    ROUND(SUM(f.Quantity) / COUNT(DISTINCT f.OrderID), 2) as PriemernePolozkyNaObjednavku
 FROM facts_orderdetails f
-JOIN dim_products d ON f.dim_products_ProductID = d.ProductID
-GROUP BY d.Category
-ORDER BY sales DESC;
+JOIN dim_products dp ON f.dim_products_ProductID = dp.ProductID
+GROUP BY dp.Category
+ORDER BY CelkovePredaje DESC;
+
 
 --Mesačné tržby
 SELECT 
@@ -34,31 +39,27 @@ FROM facts_orderdetails f
 JOIN dim_customers c ON f.dim_customers_CustomerID = c.CustomerID
 GROUP BY c.Country
 ORDER BY orders DESC
-Limit 10;
+LIMIT 10;
 
 -- Sezónna analýza predaja
-WITH seasonal_data AS (
-    SELECT 
-        CASE 
-            WHEN d.month IN (3,4,5) THEN 'Spring'
-            WHEN d.month IN (6,7,8) THEN 'Summer'
-            WHEN d.month IN (9,10,11) THEN 'Fall'
-            ELSE 'Winter'
-        END as season,
-        SUM(f.OverallPrice) as sales,
-        COUNT(DISTINCT f.OrderID) as orders
-    FROM facts_orderdetails f
-    JOIN dim_order_date d ON f.dim_order_date_iddim_order_date = d.iddim_order_date
-    GROUP BY 
-        CASE 
-            WHEN d.month IN (3,4,5) THEN 'Spring'
-            WHEN d.month IN (6,7,8) THEN 'Summer'
-            WHEN d.month IN (9,10,11) THEN 'Fall'
-            ELSE 'Winter'
-        END
-)
-SELECT *
-FROM seasonal_data
+SELECT 
+    CASE 
+        WHEN d.month IN (3,4,5) THEN 'Spring'
+        WHEN d.month IN (6,7,8) THEN 'Summer'
+        WHEN d.month IN (9,10,11) THEN 'Fall'
+        ELSE 'Winter'
+    END as season,
+    SUM(f.OverallPrice) as sales,
+    COUNT(DISTINCT f.OrderID) as orders
+FROM facts_orderdetails f
+JOIN dim_order_date d ON f.dim_order_date_iddim_order_date = d.iddim_order_date
+GROUP BY 
+    CASE 
+        WHEN d.month IN (3,4,5) THEN 'Spring'
+        WHEN d.month IN (6,7,8) THEN 'Summer'
+        WHEN d.month IN (9,10,11) THEN 'Fall'
+        ELSE 'Winter'
+    END
 ORDER BY 
     CASE season
         WHEN 'Spring' THEN 1
