@@ -335,4 +335,4 @@ ORDER BY
     END;
 ```
 
-Autor: Andrej Šima
+
